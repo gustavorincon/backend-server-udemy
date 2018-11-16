@@ -9,8 +9,13 @@ var Medico = require('../models/medico');
 //Obetener todos los usuarios
 //==========================================
 app.get('/', (req, res, next) => {
-
+    var desde = req.query.desde || 0;
+    desde = Number(desde);
     Medico.find({}, 'nombre email img role')
+        .skip(desde)
+        .limit(5)
+        .populate('usuario', 'nombre email')
+        .populate('hospital')
         .exec(
             (err, medicos) => {
 
@@ -21,10 +26,14 @@ app.get('/', (req, res, next) => {
                         errors: err
                     });
                 }
-                res.status(200).json({
-                    ok: true,
-                    medicos: medicos
-                });
+                Medico, count({}, (err, conteo) => {
+                    res.status(200).json({
+                        ok: true,
+                        medicos: medicos,
+                        total: conteo
+                    });
+                })
+
             });
 
 });
